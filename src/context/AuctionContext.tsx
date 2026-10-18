@@ -102,7 +102,7 @@ const getInitialState = (): FullAuctionState => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.players) && parsed.teams.length > 0) {
+      if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.players)) {
         // Erase old 80 sample players if present in localStorage
         if (parsed.players.length === 80 || (parsed.players.length > 0 && parsed.players[0]?.name === 'ROHIT SHARMA')) {
           parsed.players = [];
@@ -362,7 +362,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const res = await fetch('/api/state');
       if (res.ok) {
         const data: FullAuctionState = await res.json();
-        if (data && Array.isArray(data.teams) && Array.isArray(data.players) && data.teams.length > 0) {
+        if (data && Array.isArray(data.teams) && Array.isArray(data.players)) {
           updateStateAndPersist(data);
           setError(null);
           return;

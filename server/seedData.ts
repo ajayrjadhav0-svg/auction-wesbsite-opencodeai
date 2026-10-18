@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
   extraPointsAllowed: true,
   extraPointsPenaltyRate: 1, // 1 cash or penalty unit per point over budget
   minBidIncrement: 500,
-  defaultReservePrice: 500,
+  tournamentLogo: undefined,
 };
 
 export const INITIAL_TEAMS: Team[] = [
@@ -182,7 +182,7 @@ export const RAW_PLAYERS_LIST: {
  * Builds a Fresh Pre-Auction state ready for the live bidding day.
  * Zero players registered by default, ready for CSV upload or registration.
  */
-export function buildFreshPreAuctionState(teamsList: Team[] = INITIAL_TEAMS): {
+export function buildFreshPreAuctionState(teamsList: Team[] = []): {
   teams: Team[];
   players: Player[];
   transactions: AuctionTransaction[];

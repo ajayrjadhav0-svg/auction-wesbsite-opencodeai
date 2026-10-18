@@ -8,6 +8,8 @@ coverage/
 !.env.example
 # Server-side authenticator secret (per-machine, never share)
 data/admin-totp.json
+# Local pre-reset database backups (never deployed)
+data/backups/
 # Generated auction reports & duplicate DB copies (regenerated on every save;
 # the canonical live database is data/myauctionkpl.json)
 myauctionkpl.html
