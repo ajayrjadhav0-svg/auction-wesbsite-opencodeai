@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  --font-outfit: "Outfit", sans-serif;
+  --font-inter: "Inter", sans-serif;
+
+  --color-surface: #0f131d;
+  --color-surface-dim: #0f131d;
+  --color-surface-bright: #353944;
+  --color-surface-container-lowest: #0a0e18;
+  --color-surface-container-low: #171b26;
+  --color-surface-container: #1c1f2a;
+  --color-surface-container-high: #262a35;
+  --color-surface-container-highest: #313540;
+  --color-on-surface: #dfe2f1;
+  --color-on-surface-variant: #bbcabf;
+  --color-primary: #4edea3;
+  --color-primary-container: #10b981;
+  --color-on-primary: #003824;
+  --color-on-primary-container: #00422b;
+  --color-secondary: #4cd7f6;
+  --color-secondary-container: #03b5d3;
+  --color-on-secondary-container: #00424e;
+  --color-tertiary: #ffb95f;
+  --color-tertiary-container: #e29100;
+  --color-on-tertiary-container: #523200;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    color: #0f172a;
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom scrollbar hiding */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Print: only the auction report sheet, never the app chrome */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  /* When the export modal is open (portal), suppress the whole app */
+  body:has(.export-print-modal) > *:not(.export-print-modal) {
+    display: none !important;
+  }
+
+  .export-print-modal {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+
+  .export-print-modal > * {
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #printable-auction-sheet {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .page-break-inside-avoid,
+  .page-break-inside-avoid * {
+    break-inside: avoid;
+  }
+}

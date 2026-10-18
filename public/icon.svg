@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="ballGrad" x1="20%" y1="20%" x2="80%" y2="80%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="60%" stop-color="#b91c1c" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+  <!-- Background Shield -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="url(#goldGrad)" stroke-width="6" opacity="0.4"/>
+  
+  <!-- Cricket Ball Circle -->
+  <circle cx="256" cy="230" r="140" fill="url(#ballGrad)" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.5))"/>
+  <!-- Ball Seam Curve -->
+  <path d="M 180 125 C 230 170, 240 290, 180 335" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="8,6" opacity="0.85"/>
+  <path d="M 332 125 C 282 170, 272 290, 332 335" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="8,6" opacity="0.85"/>
+  <ellipse cx="256" cy="230" rx="7" ry="140" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="7,5" opacity="0.9"/>
+  <!-- Highlights -->
+  <circle cx="210" cy="170" r="28" fill="#ffffff" opacity="0.2"/>
+
+  <!-- Gavel / Trophy Accent -->
+  <g transform="translate(256, 400)">
+    <text x="0" y="0" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="800" font-size="34" fill="#ffffff" letter-spacing="4">CRICKET AUCTION</text>
+    <text x="0" y="32" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="700" font-size="20" fill="#fbbf24" letter-spacing="6">LIVE DESK</text>
+  </g>
+</svg>

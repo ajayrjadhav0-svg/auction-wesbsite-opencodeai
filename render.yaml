@@ -1,0 +1,25 @@
+# Render.com deployment — KUSAWADE PREMIER LEAGUE 2026 auction
+# One free web service runs BOTH the website and the live-auction sync server.
+services:
+  - type: web
+    name: kpl-2026-auction
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set these two in the Render dashboard (Environment tab):
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      # Optional: enables real email OTP delivery. Leave unset to use the
+      # authenticator app (recommended) — no email needed at the venue.
+      # - key: SMTP_HOST
+      #   sync: false
+      # - key: SMTP_USER
+      #   sync: false
+      # - key: SMTP_PASS
+      #   sync: false

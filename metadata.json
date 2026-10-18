@@ -1,0 +1,8 @@
+{
+  "name": "My Cricket League Auction",
+  "description": "Live cricket league auction management platform and spectator broadcast. Admin can configure tournament rules, team purses, free points, upload CSV rosters, and conduct live bidding.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

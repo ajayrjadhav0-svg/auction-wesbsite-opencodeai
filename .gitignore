@@ -1,0 +1,19 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+# Server-side authenticator secret (per-machine, never share)
+data/admin-totp.json
+# Generated auction reports & duplicate DB copies (regenerated on every save;
+# the canonical live database is data/myauctionkpl.json)
+myauctionkpl.html
+myauctionkpl.json
+data/myauctionkpl.html
+public/myauctionkpl.html
+public/myauctionkpl.json
+public/cricket_auction_report.html
+data/cricket_auction_report.html
