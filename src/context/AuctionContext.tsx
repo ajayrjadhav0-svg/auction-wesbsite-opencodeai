@@ -184,6 +184,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // as spectator view. Admin state lives only in localStorage.
       const url = new URL(window.location.href);
       url.searchParams.set('role', 'viewer');
+      url.searchParams.delete('view');
       window.history.replaceState({}, '', url.toString());
     } catch {
       // Ignore
@@ -209,6 +210,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Keep the URL clean (role=viewer) so shared links always open as spectator.
       const url = new URL(window.location.href);
       url.searchParams.set('role', 'viewer');
+      url.searchParams.delete('view');
       window.history.replaceState({}, '', url.toString());
     } catch {
       // Ignore
@@ -305,6 +307,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       const url = new URL(window.location.href);
       url.searchParams.set('role', 'viewer');
+      url.searchParams.delete('view');
       window.history.replaceState({}, '', url.toString());
     } catch {
       // Ignore
