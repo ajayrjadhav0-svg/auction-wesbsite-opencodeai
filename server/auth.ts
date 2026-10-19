@@ -2,9 +2,7 @@ import crypto from 'crypto';
 import {
   getAdminEmail,
   getAdminPassword,
-  isMailConfigured,
   maskEmail,
-  sendOtpEmail,
 } from './mailer';
 import { isTotpEnrolled, verifyTotpLogin } from './totp';
 
@@ -64,7 +62,6 @@ export function getAuthStatus() {
   return {
     emailConfigured: Boolean(email),
     email: email ? maskEmail(email) : '',
-    mailConfigured: isMailConfigured(),
     passwordIsDefault: getAdminPassword() === 'admin123',
     totpEnrolled: isTotpEnrolled(),
   };
@@ -81,60 +78,31 @@ export async function startAdminLogin(password: string, tournamentName?: string)
     return { ok: false, message: 'Incorrect administrator password.' };
   }
 
-  // Authenticator app enrolled — no email is involved at all.
-  if (isTotpEnrolled()) {
-    const id = crypto.randomBytes(16).toString('hex');
-    challenges.set(id, {
-      id,
-      code: '',
-      email: getAdminEmail(),
-      method: 'totp',
-      expiresAt: Date.now() + OTP_TTL_MS,
-      attempts: 0,
-      createdAt: Date.now(),
-    });
-    return {
-      ok: true,
-      challengeId: id,
-      method: 'totp',
-      message: 'Enter the current 6-digit code from your authenticator app.',
-    };
-  }
-
-  const adminEmail = getAdminEmail();
-  if (!adminEmail && isMailConfigured()) {
+  // Authenticator app is required — no email OTP path remains.
+  if (!isTotpEnrolled()) {
     return {
       ok: false,
+      method: 'totp',
       message:
-        'No ADMIN_EMAIL configured on the server. Add ADMIN_EMAIL (and SMTP settings) to your .env file.',
+        'Authenticator app (TOTP) is required for admin login. Please set up the authenticator app first from the admin panel.',
     };
   }
 
-  const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
   const id = crypto.randomBytes(16).toString('hex');
-
   challenges.set(id, {
     id,
-    code,
-    email: adminEmail,
-    method: 'email',
+    code: '',
+    email: getAdminEmail(),
+    method: 'totp',
     expiresAt: Date.now() + OTP_TTL_MS,
     attempts: 0,
     createdAt: Date.now(),
   });
-
-  const result = await sendOtpEmail(adminEmail, code, tournamentName);
-  const masked = maskEmail(adminEmail);
-
   return {
     ok: true,
     challengeId: id,
-    email: masked,
-    delivered: result.delivered,
-    devCode: result.delivered ? undefined : code,
-    message: result.delivered
-      ? `Verification code sent to ${masked}.`
-      : 'Email service is not configured — use the on-screen code (dev mode).',
+    method: 'totp',
+    message: 'Enter the current 6-digit code from your authenticator app.',
   };
 }
 

@@ -158,29 +158,21 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, []);
 
-  // Initialize role from URL query param or localStorage.
-  // Admin is only honoured when a verification token is present.
+  // Initialize role from localStorage only. URL ?role=admin is ignored on
+  // page load — shared links must always open as spectator view. Admin
+  // state lives in localStorage (set after successful TOTP verification).
   useEffect(() => {
     try {
       const token = localStorage.getItem(ADMIN_TOKEN_KEY);
-      const params = new URLSearchParams(window.location.search);
-      const urlRole = params.get('role');
-      if (urlRole === 'viewer') {
+      const saved = localStorage.getItem(ROLE_STORAGE_KEY);
+      if (saved === 'admin' && token) {
+        setRoleState('admin');
+      } else {
         setRoleState('viewer');
         localStorage.setItem(ROLE_STORAGE_KEY, 'viewer');
-      } else if (urlRole === 'admin' && token) {
-        setRoleState('admin');
-        localStorage.setItem(ROLE_STORAGE_KEY, 'admin');
-      } else {
-        const saved = localStorage.getItem(ROLE_STORAGE_KEY);
-        if (saved === 'viewer') {
-          setRoleState('viewer');
-        } else if (saved === 'admin' && token) {
-          setRoleState('admin');
-        }
       }
     } catch {
-      // Fallback
+      setRoleState('viewer');
     }
   }, []);
 
@@ -188,8 +180,10 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRoleState(newRole);
     try {
       localStorage.setItem(ROLE_STORAGE_KEY, newRole);
+      // Do NOT write role=admin into the URL — shared links must always open
+      // as spectator view. Admin state lives only in localStorage.
       const url = new URL(window.location.href);
-      url.searchParams.set('role', newRole);
+      url.searchParams.set('role', 'viewer');
       window.history.replaceState({}, '', url.toString());
     } catch {
       // Ignore
@@ -199,7 +193,9 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const getViewerShareUrl = () => {
     try {
       const url = new URL(window.location.href);
+      // Always force spectator/viewer role on shared links — never admin.
       url.searchParams.set('role', 'viewer');
+      url.searchParams.delete('view');
       return url.toString();
     } catch {
       return window.location.href;
@@ -210,8 +206,9 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRoleState('admin');
     try {
       localStorage.setItem(ROLE_STORAGE_KEY, 'admin');
+      // Keep the URL clean (role=viewer) so shared links always open as spectator.
       const url = new URL(window.location.href);
-      url.searchParams.set('role', 'admin');
+      url.searchParams.set('role', 'viewer');
       window.history.replaceState({}, '', url.toString());
     } catch {
       // Ignore

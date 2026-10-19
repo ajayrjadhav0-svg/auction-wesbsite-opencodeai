@@ -32,7 +32,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 Admin Authentication
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Password + one-time verification code
+                Password + authenticator app code
               </p>
             </div>
           </div>
@@ -49,8 +49,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <Lock className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
           <span>
             This panel controls the whole tournament. Access requires the administrator password and
-            a one-time verification code (from your authenticator app, or emailed to the registered
-            admin address).
+            a one-time code from your authenticator app (Google Authenticator, Authy, etc.).
           </span>
         </div>
 

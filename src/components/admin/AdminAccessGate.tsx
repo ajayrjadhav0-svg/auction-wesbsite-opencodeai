@@ -32,8 +32,8 @@ export const AdminAccessGate: React.FC<AdminAccessGateProps> = ({
           </h2>
           <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
             Sign in with the administrator password, then complete the one-time verification step —
-            an authenticator app code (when enrolled) or a code sent to the registered admin
-            address — before access is granted.
+            enter the current 6-digit code from your authenticator app (Google Authenticator,
+            Authy, Microsoft Authenticator, etc.) before access is granted.
           </p>
         </div>
 

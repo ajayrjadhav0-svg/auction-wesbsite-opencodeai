@@ -89,7 +89,13 @@ function unslimImages(value: any): void {
       if (typeof val === 'string') {
         if (val === '/api/tournament/logo') {
           const logo = db.getState()?.settings?.tournamentLogo;
-          if (typeof logo === 'string') value[key] = logo;
+          if (typeof logo === 'string') {
+            value[key] = logo;
+          } else {
+            // No stored logo — clear the slimmed placeholder so the client
+            // doesn't keep a broken /api/tournament/logo reference.
+            delete value[key];
+          }
         } else {
           const match = val.match(/^\/api\/players\/(\d+)\/photo$/);
           if (match) {
@@ -123,7 +129,9 @@ function sendDataUriImage(res: Response, dataUri: string): void {
     res.status(404).json({ error: 'No image available' });
     return;
   }
-  res.set('Cache-Control', 'public, max-age=300');
+  // Short cache so admin logo changes are visible quickly (viewers re-fetch
+  // the image separately from /api/state which only carries the /api URL).
+  res.set('Cache-Control', 'public, max-age=30, must-revalidate');
   res.type(match[1]);
   res.send(Buffer.from(match[2], 'base64'));
 }

@@ -2,13 +2,10 @@ import React, { useEffect, useState } from 'react';
 import {
   Shield,
   Lock,
-  Mail,
   Smartphone,
-  KeyRound,
   Eye,
   EyeOff,
   AlertCircle,
-  CheckCircle2,
   ArrowLeft,
   RefreshCw,
 } from 'lucide-react';
@@ -22,12 +19,11 @@ interface AdminOtpLoginProps {
 }
 
 /**
- * Two-step admin login:
+ * Two-step admin login — authenticator app (TOTP) only:
  *   1. Enter the administrator password.
- *   2. Enter the one-time code — from the authenticator app when TOTP is
- *      enrolled (Google Authenticator / Authy / etc.), otherwise emailed.
- *      With no SMTP and no TOTP configured, the emailed code is shown on
- *      screen (dev mode).
+ *   2. Enter the current 6-digit code from your authenticator app
+ *      (Google Authenticator, Authy, Microsoft Authenticator, etc.).
+ * No email OTP is used.
  */
 export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact = false }) => {
   const { requestAdminOtp, verifyAdminOtp } = useAuction();
@@ -37,15 +33,11 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [challengeId, setChallengeId] = useState('');
-  const [maskedEmail, setMaskedEmail] = useState('');
-  const [devCode, setDevCode] = useState('');
   const [info, setInfo] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [busy, setBusy] = useState(false);
-  /** Whether the server has an authenticator app enrolled (affects step-1 hints). */
+  /** Whether the server has an authenticator app enrolled. */
   const [totpEnrolled, setTotpEnrolled] = useState(false);
-  /** Which second step this login actually uses. */
-  const [method, setMethod] = useState<'totp' | 'email'>('email');
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +49,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
         }
       })
       .catch(() => {
-        /* Server unreachable (static/offline mode) — email flow is the fallback. */
+        /* Server unreachable — TOTP not available. */
       });
     return () => {
       cancelled = true;
@@ -79,10 +71,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
         return;
       }
       setChallengeId(result.challengeId || '');
-      setMaskedEmail(result.email || '');
-      setDevCode(result.devCode || '');
       setInfo(result.message || '');
-      setMethod(result.method === 'totp' ? 'totp' : 'email');
       setCode('');
       setStep('code');
     } finally {
@@ -94,11 +83,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
     if (e) e.preventDefault();
     setErrorMsg('');
     if (!code.trim()) {
-      setErrorMsg(
-        method === 'totp'
-          ? 'Enter the 6-digit code from your authenticator app.'
-          : 'Enter the 6-digit verification code.'
-      );
+      setErrorMsg('Enter the 6-digit code from your authenticator app.');
       return;
     }
     setBusy(true);
@@ -131,7 +116,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
         <span className="w-6 h-px bg-slate-300" />
         <span className={`flex items-center gap-1.5 ${step === 'code' ? 'text-indigo-600' : 'text-slate-400'}`}>
           <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 'code' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2</span>
-          {step === 'code' && method === 'totp' ? 'App Code' : totpEnrolled ? 'App Code' : 'Email Code'}
+          Authenticator App Code
         </span>
       </div>
 
@@ -165,15 +150,14 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
               </button>
             </div>
             <p className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5 text-indigo-500" />
               {totpEnrolled ? (
                 <>
-                  <Smartphone className="w-3.5 h-3.5 text-indigo-500" />
                   Next you will enter the current 6-digit code from your authenticator app.
                 </>
               ) : (
                 <>
-                  <Mail className="w-3.5 h-3.5 text-indigo-500" />
-                  A one-time verification code will be emailed to the registered admin address.
+                  Authenticator app not yet enrolled — set it up in Admin after logging in once.
                 </>
               )}
             </p>
@@ -191,19 +175,25 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
             disabled={busy}
             className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-['Outfit'] font-bold text-sm flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all"
           >
-            {busy ? <RefreshCw className="w-4 h-4 animate-spin" /> : totpEnrolled ? <Smartphone className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
-            <span>{busy ? 'Verifying password...' : totpEnrolled ? 'Continue to App Code' : 'Send Verification Code'}</span>
+            {busy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Smartphone className="w-4 h-4" />}
+            <span>
+              {busy
+                ? 'Verifying password...'
+                : totpEnrolled
+                ? 'Continue to Authenticator Code'
+                : 'Continue'}
+            </span>
           </button>
         </form>
       ) : (
         <form onSubmit={verifyCode} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              {method === 'totp' ? 'Code From Authenticator App' : 'Enter 6-Digit Verification Code'}
+              Code From Authenticator App
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                {method === 'totp' ? <Smartphone className="w-4 h-4" /> : <KeyRound className="w-4 h-4" />}
+                <Smartphone className="w-4 h-4" />
               </div>
               <input
                 type="text"
@@ -219,39 +209,15 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
                 className={`${inputBase} tracking-[0.5em] font-mono text-center text-lg`}
               />
             </div>
-            {method === 'totp' ? (
-              <p className="mt-2 text-[11px] text-slate-500">
-                Open Google Authenticator, Authy or a similar app — the code refreshes every 30 seconds.
-                Lost your phone? A one-time backup code works here too.
-              </p>
-            ) : (
-              maskedEmail && (
-                <p className="mt-2 text-[11px] text-slate-500">
-                  Code sent to <strong className="text-slate-700">{maskedEmail}</strong>. It expires in 10 minutes.
-                </p>
-              )
-            )}
+            <p className="mt-2 text-[11px] text-slate-500">
+              Open Google Authenticator, Authy or a similar app — the code refreshes every 30 seconds.
+              Lost your phone? A one-time backup code works here too.
+            </p>
           </div>
 
-          {info && !devCode && method !== 'totp' && (
+          {info && (
             <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-800 flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{info}</span>
-            </div>
-          )}
-
-          {devCode && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4" />
-                Dev mode — email not sent
-              </div>
-              <p className="text-[11px]">
-                SMTP is not configured on the server. Use this verification code:
-              </p>
-              <div className="font-mono font-black text-xl tracking-[0.3em] bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-center">
-                {devCode}
-              </div>
             </div>
           )}
 
@@ -275,17 +241,6 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
             </button>
-            {method === 'email' && (
-              <button
-                type="button"
-                onClick={sendCode}
-                disabled={busy}
-                className="px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 flex items-center gap-1.5 transition-colors disabled:opacity-60"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Resend</span>
-              </button>
-            )}
             <button
               type="submit"
               disabled={busy}
