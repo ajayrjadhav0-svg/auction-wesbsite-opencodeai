@@ -3,6 +3,7 @@ import {
   Shield,
   Lock,
   Smartphone,
+  KeyRound,
   Eye,
   EyeOff,
   AlertCircle,
@@ -33,6 +34,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [challengeId, setChallengeId] = useState('');
+  const [bypassCode, setBypassCode] = useState('');
   const [info, setInfo] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -65,7 +67,7 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
     }
     setBusy(true);
     try {
-      const result = await requestAdminOtp(password);
+      const result = await requestAdminOtp(password, bypassCode.trim() || undefined);
       if (!result.ok) {
         setErrorMsg(result.message || 'Could not start verification.');
         return;
@@ -157,10 +159,38 @@ export const AdminOtpLogin: React.FC<AdminOtpLoginProps> = ({ onSuccess, compact
                 </>
               ) : (
                 <>
-                  Authenticator app not yet enrolled — set it up in Admin after logging in once.
+                  Authenticator app not yet enrolled — use the temporary bypass code below once.
                 </>
               )}
             </p>
+
+            {!totpEnrolled && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+                  Temporary Bypass Code
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={bypassCode}
+                    onChange={(e) => {
+                      setBypassCode(e.target.value.replace(/[^0-9a-zA-Z-]/g, ''));
+                      if (errorMsg) setErrorMsg('');
+                    }}
+                    placeholder="Enter temporary bypass code"
+                    className={`${inputBase} font-mono text-center text-lg`}
+                  />
+                </div>
+                <p className="text-[10px] text-amber-600 font-medium">
+                  One-time use only — set ADMIN_TEMP_BYPASS_CODE on the server, use it here,
+                  then remove it and enroll your authenticator app.
+                </p>
+              </div>
+            )}
           </div>
 
           {errorMsg && (

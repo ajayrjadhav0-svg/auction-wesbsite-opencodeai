@@ -221,12 +221,12 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Sends the password to the server, which emails a one-time code to ADMIN_EMAIL.
    * Falls back to a local dev challenge when the server is unreachable (static hosting).
    */
-  const requestAdminOtp = async (password: string): Promise<AdminOtpStartResult> => {
+  const requestAdminOtp = async (password: string, bypassCode?: string): Promise<AdminOtpStartResult> => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, bypassCode }),
       });
       const data = await res.json();
       if (data && typeof data.ok === 'boolean') {

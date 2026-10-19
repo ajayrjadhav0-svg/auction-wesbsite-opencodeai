@@ -71,11 +71,33 @@ export function getAuthStatus() {
  * Step 1: validate the admin password, then start the second step —
  * an authenticator-app code when TOTP is enrolled, otherwise a emailed code.
  */
-export async function startAdminLogin(password: string, tournamentName?: string): Promise<AdminLoginStartResult> {
+export async function startAdminLogin(password: string, tournamentName?: string, bypassCode?: string): Promise<AdminLoginStartResult> {
   cleanup();
 
   if ((password || '').trim() !== getAdminPassword()) {
     return { ok: false, message: 'Incorrect administrator password.' };
+  }
+
+  // Temporary one-time bypass for initial TOTP enrollment (no email OTP).
+  // Set ADMIN_TEMP_BYPASS_CODE env var, use it once, then remove it.
+  const envBypass = process.env.ADMIN_TEMP_BYPASS_CODE;
+  if (envBypass && bypassCode && bypassCode === envBypass) {
+    const id = crypto.randomBytes(16).toString('hex');
+    challenges.set(id, {
+      id,
+      code: 'BYPASS',
+      email: getAdminEmail(),
+      method: 'totp',
+      expiresAt: Date.now() + OTP_TTL_MS,
+      attempts: 0,
+      createdAt: Date.now(),
+    });
+    return {
+      ok: true,
+      challengeId: id,
+      method: 'totp',
+      message: 'Temporary bypass active — enter any 6-digit code to proceed, then enroll your authenticator app.',
+    };
   }
 
   // Authenticator app is required — no email OTP path remains.
@@ -137,6 +159,24 @@ export function verifyAdminOtp(challengeId: string, code: string): AdminVerifyRe
   }
 
   if (challenge.method === 'totp') {
+    // Temporary bypass — accept any code, then user must enroll TOTP.
+    if (challenge.code === 'BYPASS') {
+      const token = crypto.randomBytes(24).toString('hex');
+      sessions.set(token, {
+        token,
+        email: challenge.email,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + SESSION_TTL_MS,
+      });
+      challenges.delete(challengeId);
+      return {
+        ok: true,
+        token,
+        email: maskEmail(challenge.email),
+        message: 'Temporary bypass — please set up your authenticator app now from the Admin panel.',
+      };
+    }
+
     const totpResult = verifyTotpLogin(code);
     if (!totpResult.ok) {
       return {

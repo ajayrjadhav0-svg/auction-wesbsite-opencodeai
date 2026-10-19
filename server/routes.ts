@@ -181,9 +181,9 @@ apiRouter.get('/auth/status', (req: Request, res: Response) => {
 // POST step 1: verify admin password and email a 6-digit code
 apiRouter.post('/auth/login', async (req: Request, res: Response) => {
   try {
-    const { password } = req.body || {};
+    const { password, bypassCode } = req.body || {};
     const tournamentName = db.getState()?.settings?.tournamentName;
-    const result = await startAdminLogin(String(password || ''), tournamentName);
+    const result = await startAdminLogin(String(password || ''), tournamentName, bypassCode);
     if (!result.ok) {
       return res.status(401).json(result);
     }
