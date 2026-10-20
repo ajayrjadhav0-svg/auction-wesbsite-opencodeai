@@ -25,6 +25,7 @@ import {
   Trophy,
   Download,
   Trash2,
+  Database,
 } from 'lucide-react';
 import { useAuction } from '../context/AuctionContext';
 import { formatINR, formatPoints, getRoleBadgeStyle } from '../utils/formatters';
@@ -36,6 +37,7 @@ import { EditTeamModal } from './admin/EditTeamModal';
 import { TeamSquadModal } from './admin/TeamSquadModal';
 import { AddNewPlayerModal } from './admin/AddNewPlayerModal';
 import { CsvUploadModal } from './admin/CsvUploadModal';
+import { JsonRestoreModal } from './admin/JsonRestoreModal';
 import { AdminAccessGate } from './admin/AdminAccessGate';
 import { TotpSetupCard } from './admin/TotpSetupCard';
 import { AuctionExportModal } from './AuctionExportModal';
@@ -65,6 +67,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onSelectNav }) => {
     clearAllPlayers,
     importPlayerRows,
     addPlayer,
+    restoreDatabase,
     getViewerShareUrl,
     showNotification,
   } = useAuction();
@@ -95,6 +98,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onSelectNav }) => {
   const [isAddNewPlayerOpen, setIsAddNewPlayerOpen] = useState(false);
   const [isCsvUploadOpen, setIsCsvUploadOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isJsonRestoreOpen, setIsJsonRestoreOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [teamToViewSquad, setTeamToViewSquad] = useState<Team | null>(null);
   const [isSubmittingSale, setIsSubmittingSale] = useState(false);
@@ -407,6 +411,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onSelectNav }) => {
           >
             <Trophy className="w-3.5 h-3.5 text-amber-500" />
             <span>League Name & Logo</span>
+          </button>
+          <button
+            id="btn-top-restore-backup"
+            onClick={() => setIsJsonRestoreOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl border border-amber-200 bg-amber-50/80 hover:bg-amber-100 text-amber-900 font-['Outfit'] font-bold text-xs shadow-2xs flex items-center gap-1.5 transition-colors"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Restore Backup</span>
           </button>
           <button
             onClick={handleOpenStage}
@@ -1655,6 +1667,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onSelectNav }) => {
         onSave={async (updates) => {
           await updateSettings(updates);
         }}
+      />
+
+      {/* 10. Restore JSON Backup Modal */}
+      <JsonRestoreModal
+        isOpen={isJsonRestoreOpen}
+        onClose={() => setIsJsonRestoreOpen(false)}
+        onRestore={restoreDatabase}
       />
     </div>
   );

@@ -918,6 +918,53 @@ class AuctionDatabase {
   }
 
   /**
+   * Restore the entire auction database from a backed-up JSON state.
+   * Replaces players, teams, settings, transactions, and bidding.
+   */
+  public restoreFromJson(backup: any): { success: boolean; message: string; state: FullAuctionState } {
+    try {
+      if (!backup || !Array.isArray(backup.players) || !Array.isArray(backup.teams)) {
+        return {
+          success: false,
+          message: 'Invalid backup file: missing players or teams array.',
+          state: this.state,
+        };
+      }
+
+      const restoredState: FullAuctionState = {
+        settings: backup.settings || { ...DEFAULT_SETTINGS },
+        teams: backup.teams,
+        players: backup.players,
+        transactions: Array.isArray(backup.transactions) ? backup.transactions : [],
+        bidding: backup.bidding || {
+          currentPlayerId: 0,
+          currentBid: backup.settings?.defaultReservePrice || 500,
+          selectedTeamId: backup.teams[0]?.id || null,
+          isActive: false,
+          bidHistory: [],
+        },
+        summary: backup.summary || this.calculateSummary(backup.players, backup.teams),
+      };
+
+      this.state = restoredState;
+      this.recalculateAllTeams();
+      this.saveToDisk();
+
+      return {
+        success: true,
+        message: 'Database restored from backup successfully.',
+        state: this.state,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: 'Failed to restore backup: ' + err.message,
+        state: this.state,
+      };
+    }
+  }
+
+  /**
    * Bulk CSV import for players containing ID, NAME, ROLE, VILLAGE
    */
   public importPlayersFromCSV(csvText: string, replaceExisting: boolean = false): { count: number; message: string; state: FullAuctionState } {

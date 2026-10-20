@@ -619,6 +619,19 @@ apiRouter.get('/export/myauctionkpl.html', (req: Request, res: Response) => {
   return res.send(html);
 });
 
+// Restore auction database from uploaded JSON backup
+apiRouter.post('/restore/json', (req: Request, res: Response) => {
+  try {
+    const result = db.restoreFromJson(req.body);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message || 'Restore failed', state: db.getState() });
+  }
+});
+
 // Save current auction database on server with requested file name (e.g. myauctionkpl.json)
 apiRouter.post('/save-file', (req: Request, res: Response) => {
   try {

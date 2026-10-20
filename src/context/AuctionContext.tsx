@@ -83,6 +83,7 @@ interface AuctionContextType {
     rows: ImportPlayerRow[],
     replaceExisting?: boolean
   ) => Promise<{ count: number; message: string } | null>;
+  restoreDatabase: (backupData: any) => Promise<boolean>;
   getViewerShareUrl: () => string;
   requestAdminOtp: (password: string) => Promise<AdminOtpStartResult>;
   verifyAdminOtp: (challengeId: string, code: string) => Promise<AdminOtpVerifyResult>;
@@ -1144,6 +1145,30 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return 0;
   };
 
+  const restoreDatabase = async (backupData: any): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/restore/json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backupData),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.state) {
+          updateStateAndPersist(data.state);
+          showNotification('success', data.message);
+          return true;
+        }
+      }
+      const errData = await res.json();
+      showNotification('error', errData.message || 'Restore failed.');
+      return false;
+    } catch (err: any) {
+      showNotification('error', 'Restore failed: ' + err.message);
+      return false;
+    }
+  };
+
   const saveFileAs = async (fileName: string = 'myauctionkpl'): Promise<{ success: boolean; fileName: string }> => {
     const clean = fileName.replace(/[^a-zA-Z0-9_-]/g, '').trim() || 'myauctionkpl';
 
@@ -1289,6 +1314,7 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         importPlayers,
         importCSV,
         importPlayerRows,
+        restoreDatabase,
         getViewerShareUrl,
         requestAdminOtp,
         verifyAdminOtp,
