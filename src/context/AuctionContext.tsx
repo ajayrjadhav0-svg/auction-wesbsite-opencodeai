@@ -401,11 +401,39 @@ export const AuctionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [updateStateAndPersist]);
 
-  // Real-time synchronization polling every 2.5 seconds
+  // Real-time synchronization polling every 2.5 seconds.
+  // Pauses when the browser tab is hidden to reduce server load for
+  // background viewers, and resumes (with an immediate fetch) when visible.
   useEffect(() => {
-    fetchState();
-    const interval = setInterval(fetchState, 2500);
-    return () => clearInterval(interval);
+    const intervalRef = { current: 0 };
+
+    const startPolling = () => {
+      fetchState();
+      intervalRef.current = window.setInterval(fetchState, 2500);
+    };
+
+    const stopPolling = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = 0;
+      }
+    };
+
+    startPolling();
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [fetchState]);
 
   const placeBid = async (playerId: number, teamId: string | null, amount: number) => {
